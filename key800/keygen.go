@@ -56,13 +56,13 @@ func main() {
 	for i := 0; i < numberOfKeys; i++ {
 		key, _ := ecdsa.GenerateKey(secp256k1.S256(), rand3)
 
-		addr := crypto.PubkeyToAddress(key.PublicKey)
-		priv, _ := btcec.PrivKeyFromBytes(key.PublicKey.Curve, crypto.FromECDSA(key))
-		wif, _ := btcutil.NewWIF(priv, &chaincfg.MainNetParams, true)
+		ethAddr := crypto.PubkeyToAddress(key.PublicKey)
+		btcPriv, _ := btcec.PrivKeyFromBytes(key.PublicKey.Curve, crypto.FromECDSA(key))
+		wif, _ := btcutil.NewWIF(btcPriv, &chaincfg.MainNetParams, true)
 
-		bitcoinKey, _ := btcutil.NewAddressWitnessPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), &chaincfg.MainNetParams);
-		bitcoinKeyOld, _ := btcutil.NewAddressPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), &chaincfg.MainNetParams);
-		fmt.Printf("%v,%v,%v,%v,%v\n", common.ToHex(crypto.FromECDSA(key)), wif, addr.Hex(), bitcoinKey, bitcoinKeyOld)
+		btcWitAddr, _ := btcutil.NewAddressWitnessPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), &chaincfg.MainNetParams);
+		btcAddr, _ := btcutil.NewAddressPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), &chaincfg.MainNetParams);
+		fmt.Printf("%v,%v,%v,%v,%v\n", common.ToHex(crypto.FromECDSA(key)), wif, ethAddr.Hex(), btcWitAddr, btcAddr)
 	}
 }
 
