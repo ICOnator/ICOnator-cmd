@@ -5,13 +5,23 @@ This tool will generate Bitcoin and Ethereum address. You can specify how many a
 ## Build
 
 ```
-git clone [this repo]
+git clone https://github.com/ICOnator/ICOnator-cmd.git
+cd ICOnator-cmd/key800
 go get && go build
 ```
  
 This will generate a the binary key800. 
 
 ## Example usage
+
+The parameters for this tools are:
+
+```
+Usage:
+  keygen [-n num] [-s private-key CSV] [-p public-key CSV] [-r1 random1] [-r2 random2] [-r3 random3] [-r4 random4]
+```
+
+Example:
 
 ```
 ./key800 -n 10 -1 9053294 -2 26906534
