@@ -118,6 +118,6 @@ func createSeed(random1 int, random2 int, random3 int, random4 int) int64 {
 	binary.Write(buf, binary.LittleEndian, random2)
 	binary.Write(buf, binary.LittleEndian, random3)
 	binary.Write(buf, binary.LittleEndian, random4)
-	seed := crypto.Sha3Hash(buf.Bytes()).Big().Int64()
+	seed := crypto.Keccak256Hash(buf.Bytes()).Big().Int64()
 	return seed
 }
