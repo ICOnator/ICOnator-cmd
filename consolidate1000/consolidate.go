@@ -50,7 +50,9 @@ func main() {
 
 	flag.Usage = func() {
 		println("Usage:")
-		println("  consolidate1000 [-s filename] [-d boolean] [-b bitcoin address] [--bitcoin-url url:port] [--bitcoin-user] [--bitcoin-pass] [--bictoin-net] [-e ethereum address] [--ethereum-url url:port] [-g gwei] [--ethereum-net]")
+		println("  consolidate1000 [-s --private-keys filename] [-d --dryrun boolean] [-b --bitcoin address] " +
+			"[--bitcoin-url url:port] [--bitcoin-user username] [--bitcoin-pass passsword] [--bictoin-net main|reg|test] " +
+			"[-e --ethereum address] [--ethereum-url url:port] [-g --gascost gwei] [--ethereum-net main|rinkeby|test]")
 		println()
 		flag.PrintDefaults()
 		println()
@@ -119,7 +121,7 @@ func consolidateBtc(privateKeyCSV string, bitcoinAddress string, bitcoinClientUR
 
 	var total int64 = 0;
 
-
+	client.CreateNewAccount("tmp-account");
 
 	for _, line := range lines {
 		if line[0] == "Private Key" {
@@ -148,23 +150,24 @@ func consolidateBtc(privateKeyCSV string, bitcoinAddress string, bitcoinClientUR
 		}
 		if int64(amount) < 5000 {
 			//ignore addresses with less than 5000 satoshis
+			log.Printf("less than 5000: %v", amount)
 			continue
 		}
 		total += int64(amount)
-
-		//client.New
-		//btcjson.TransactionInput{}
+		client.ImportPrivKey(wif)
 
 	}
-	m := make(map[btcutil.Address]btcutil.Amount)
-
-	addr, err := btcutil.DecodeAddress(bitcoinAddress, param)
+	sendTo, err := btcutil.DecodeAddress(bitcoinAddress, param)
 	if err != nil {
 		log.Fatal(err)
 	}
-	m[addr] = btcutil.Amount(total)
 
-	//client.CreateRawTransaction(m,0) //TODO: locktime?
+	if dryRun {
+		fmt.Printf("send to: %v, amount: %v BTC\n", sendTo, btcutil.Amount(total).ToBTC());
+	} else {
+		client.SendToAddress(sendTo, btcutil.Amount(total))
+	}
+
 }
 
 func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClientURL string, gasCost int, ethereumNet string, dryRun bool) {

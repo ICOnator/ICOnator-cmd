@@ -169,12 +169,11 @@ func (mr *dualReader) Read(p []byte) (n int, err error) {
 	tmp2 := make([]byte, len)
 
 	n1, err1 := mr.reader1.Read(tmp1)
-	n2, err2 := mr.reader2.Read(tmp2)
-
 	if err1 != nil {
 		return n1, err1;
 	}
 
+	n2, err2 := mr.reader2.Read(tmp2)
 	if err2 != nil {
 		return n2, err2;
 	}
@@ -183,9 +182,9 @@ func (mr *dualReader) Read(p []byte) (n int, err error) {
 		return 0, errors.New("did not read same length")
 	}
 
-	for i := 0; i < n1; i++ {
+	for i := 0; i < len; i++ {
 		p[i] = tmp1[i] ^ tmp2[i];
 	}
 
-	return n1, nil
+	return len, nil
 }
