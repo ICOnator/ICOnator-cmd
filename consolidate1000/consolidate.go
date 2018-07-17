@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	GAS_LIMIT uint64 = 1000000
+	GAS_LIMIT uint64 = 21000
 )
 
 func main() {
@@ -59,18 +59,18 @@ func main() {
 	}
 
 	flag.StringVarP(&privateKeyCSV, "private-keys", "s", "", "CSV filename to store the private keys")
-	flag.BoolVarP(&dryRun, "dryrun", "d", true, "Don't issue the tx, print the tx to stdout")
+	flag.BoolVarP(&dryRun, "dryrun", "d", false, "Don't issue the tx, print the tx to stdout")
 
 	flag.StringVarP(&bitcoinAddress, "bitcoin", "b", "", "The bitcoin address where to consolidate the transactions")
-	flag.StringVarP(&bitcoinClientURL, "bitcoin-url", "", "", "The bitcoin URL where a full node is running")
-	flag.StringVarP(&bitcoinUsername, "bitcoin-user", "", "", "The bitcoin username for the full node")
-	flag.StringVarP(&bitcoinPassword, "bitcoin-pass", "", "", "The bitcoin password for the full node")
-	flag.StringVarP(&bitcoinNet, "bitcoin-net", "", "main", "Specify bitcoin network: main,test,reg")
+	flag.StringVarP(&bitcoinClientURL, "bitcoin-url", "r", "", "The bitcoin URL where a full node is running")
+	flag.StringVarP(&bitcoinUsername, "bitcoin-user", "c", "", "The bitcoin username for the full node")
+	flag.StringVarP(&bitcoinPassword, "bitcoin-pass", "p", "", "The bitcoin password for the full node")
+	flag.StringVarP(&bitcoinNet, "bitcoin-net", "o", "main", "Specify bitcoin network: main,test,reg")
 
 	flag.StringVarP(&ethereumAddress, "ethereum", "e", "", "The ethereum address where to consolidate the transactions")
-	flag.StringVarP(&ethereumClientURL, "ethereum-url", "", "", "The ethereum URL where a full node is running")
+	flag.StringVarP(&ethereumClientURL, "ethereum-url", "t", "", "The ethereum URL where a full node is running")
 	flag.IntVarP(&gasCost, "gascost", "g", 10, "Gas cost in gwei, check https://ethgasstation.info/ for current price")
-	flag.StringVarP(&ethereumNet, "ethereum-net", "", "main", "Specify ethereum network: main,test,rinkeby")
+	flag.StringVarP(&ethereumNet, "ethereum-net", "n", "main", "Specify ethereum network: main,test,rinkeby")
 	flag.Parse(os.Args[1:])
 
 	if len(ethereumAddress) != 0 && len(ethereumClientURL) != 0 {
@@ -172,8 +172,7 @@ func consolidateBtc(privateKeyCSV string, bitcoinAddress string, bitcoinClientUR
 
 func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClientURL string, gasCost int, ethereumNet string, dryRun bool) {
 	password := randStr(20)
-	file, err:=ioutil.TempFile(os.TempDir(), "consolidate-eth")
-	defer file.Close()
+	dirName, err:=ioutil.TempDir(os.TempDir(), "consolidate-eth")
 
 	if err != nil {
 		log.Fatal(err)
@@ -182,7 +181,7 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 	//we can use keystore only
 	//https://ethereum.stackexchange.com/questions/13464/how-to-setup-the-account-manager-type-to-sign-transactions-in-go
 	ks := keystore.NewKeyStore(
-		file.Name(),
+		dirName,
 		keystore.LightScryptN,
 		keystore.LightScryptP)
 
@@ -208,9 +207,11 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 		log.Fatal(err)
 	}
 
-	gas := big.NewInt(int64(gasCost))
+	gasCostWei := big.NewInt(int64(gasCost))
 	mul := big.NewInt(1000000000) //10^9
-	gas.Mul(gas, mul)
+	gasCostWei.Mul(gasCostWei, mul)
+
+	totalGasCost := big.NewInt(0).Mul(gasCostWei, big.NewInt(int64(GAS_LIMIT)))
 
 	var param *params.ChainConfig
 	switch ethereumNet {
@@ -227,7 +228,7 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 		if line[0] == "Private Key" {
 			continue
 		}
-		privateKey, err := crypto.HexToECDSA(line[0])
+		privateKey, err := crypto.HexToECDSA(line[0][2:])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -240,10 +241,12 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		if balance.Cmp(big.NewInt(0)) == 0 {
-			print(".")
+			fmt.Printf(".")
 			continue
 		}
+		fmt.Printf("balance of %v is %v\n", line[2], balance)
 		nonce, err:=eth.NonceAt(ctx, acc.Address, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -251,17 +254,31 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 
 		//outdated, but gives a hint on the API:
 		//https://github.com/ethereum/go-ethereum/wiki/Native:-Account-management
-		rawTx := types.NewTransaction(nonce, sendToAddress, balance, GAS_LIMIT, gas, nil)
+		newBalance := balance.Sub(balance, totalGasCost)
+		rawTx := types.NewTransaction(nonce, sendToAddress, newBalance, GAS_LIMIT, gasCostWei, nil)
+		err = ks.Unlock(acc, password)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		signedTx, err := ks.SignTx(acc, rawTx, param.ChainID)
+
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		if dryRun {
 			fmt.Printf("create tx: %v\n",signedTx);
 		} else {
-			eth.SendTransaction(ctx, signedTx)
+			err = eth.SendTransaction(ctx, signedTx)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-		total.Add(total,balance)
+		total.Add(total,newBalance)
 		fmt.Printf("New total: %v\n", total)
 	}
+	fmt.Printf("\n")
 }
 
 //generate some random strings

@@ -18,7 +18,7 @@ The parameters for this tools are:
 
 ```
 Usage:
-  keygen [-n num] [-s private-key CSV] [-p public-key CSV] [-r1 random1] [-r2 random2] [-r3 random3] [-r4 random4]
+  keygen [-n num] [-s private-key CSV] [-p public-key CSV] [-1 random1] [-2 random2] [-3 random3] [-4 random4]
 ```
 
 Example:
@@ -42,3 +42,45 @@ Private Key,Private Key (WIF),Ethereum Address,Bitcoin Address (SegWit-Bech32),B
 0x9f107fa99d3442d1a15270045fdb52988085115258b61929ecfc5248ecfec5f8,L2Yup9KWriM3GwqERR5gj1DmMac4LrXGhMwFBjFZqj6idhCZrN9e,0x071b36315fc82bef802b4df8aeb6202086db8ec9,bc1qgpa0mpgr7tmwqdhupsk4tl36j4vgfrtz408guu,16swao3DPNwFRLuHjpC4uhwpMPqXukYd5a
 0x6fff8c07bfa5d2806275d9600bd6862189d8009bc8b6b870e6d139a311f9961e,KzyRMqx4GVVyEhaZH4obTCP4xs5MCKmPLUSEjgwSNucUoxGAUHGH,0x066e8f381c9d3107b11ee3494ccabd8893f15200,bc1qmrkfdk78wptspftcg92atrqfaasd42za80ke80,1LmzNwxPeNoJ1jaY8ekF72y7URPqjDrRpK
 ```
+
+## Testing
+Tests conducted with: ```./key800 -n 2 -s secret-test.csv -p public-test.csv -b test -1 43543 -2 24566 -3 645737 -4 67843```
+
+Payin to
+
+```
+Ethereum Address,Bitcoin Address (P2PKH-Base58)
+0x93d499b82c30C27E7265FfDdBbCb0421767bdd64,mopQvr2abuWAynp1hnMxcNddk8n2v5wkVY
+0x586efC5E9463C077D492a449f00a8eDa4675Da36,mrp1xXbaWbRYDN81ds47tWJrzWwX7k5XpN
+```
+
+### Ethereum Rinkeby
+For testing, 0.25 ETH was sent to the first address, and 0.33 ETH was sent to the second address:
+https://rinkeby.etherscan.io/address/0x93d499b82c30C27E7265FfDdBbCb0421767bdd64
+https://rinkeby.etherscan.io/address/0x586efC5E9463C077D492a449f00a8eDa4675Da36
+
+Consolidate Ethereum to: 0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88, current balance 0.999 ETH
+
+```
+./consolidate1000 -n "rinkeby" -t "http://127.0.0.1:8545" -s ../key800/secret-test.csv -e "0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88"
+```
+Output:
+```
+INFO [07-17|16:52:32.584] Submitted transaction                    fullhash=0x41511f1401c32d1e66b20500e6900f428354c89cc3f20ea6f83c129954384551 recipient=0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88
+INFO [07-17|16:52:32.736] Submitted transaction                    fullhash=0x78a88badb921c2778949e3423ad2577ac4a4ec752a12d96e3140543c02b3b74b recipient=0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88
+```
+https://rinkeby.etherscan.io/address/0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88, new balance 1.579114416 Ether
+
+The the other balances are:
+
+balance of 0x93d499b82c30C27E7265FfDdBbCb0421767bdd64 is 0
+
+balance of 0x586efC5E9463C077D492a449f00a8eDa4675Da36 is 0
+
+### Bitcoin
+mrp1xXbaWbRYDN81ds47tWJrzWwX7k5XpN has 0.86542092 BTC
+https://live.blockcypher.com/btc-testnet/address/mrp1xXbaWbRYDN81ds47tWJrzWwX7k5XpN/
+
+mopQvr2abuWAynp1hnMxcNddk8n2v5wkVY has 1.3 BTC
+https://live.blockcypher.com/btc-testnet/address/mopQvr2abuWAynp1hnMxcNddk8n2v5wkVY/
+
