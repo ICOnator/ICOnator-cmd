@@ -43,8 +43,8 @@ Private Key,Private Key (WIF),Ethereum Address,Bitcoin Address (SegWit-Bech32),B
 0x6fff8c07bfa5d2806275d9600bd6862189d8009bc8b6b870e6d139a311f9961e,KzyRMqx4GVVyEhaZH4obTCP4xs5MCKmPLUSEjgwSNucUoxGAUHGH,0x066e8f381c9d3107b11ee3494ccabd8893f15200,bc1qmrkfdk78wptspftcg92atrqfaasd42za80ke80,1LmzNwxPeNoJ1jaY8ekF72y7URPqjDrRpK
 ```
 
-## Testing
-Tests conducted with: ```./key800 -n 2 -s secret-test.csv -p public-test.csv -b test -1 43543 -2 24566 -3 645737 -4 67843```
+## Testing with 2 
+Tests conducted with: ```./key800 -n 2 -s secret-test.csv -p public-test.csv -N test -1 43543 -2 24566 -3 645737 -4 67843```
 
 Payin to
 
@@ -62,7 +62,7 @@ https://rinkeby.etherscan.io/address/0x586efC5E9463C077D492a449f00a8eDa4675Da36
 Consolidate Ethereum to: 0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88, current balance 0.999 ETH
 
 ```
-./consolidate1000 -n "rinkeby" -t "http://127.0.0.1:8545" -s ../key800/secret-test.csv -e "0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88"
+./consolidate1000-eth -N "rinkeby" -u "http://127.0.0.1:8545" -s ../key800/secret-test.csv -e "0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88"
 ```
 Output:
 ```
@@ -74,13 +74,32 @@ https://rinkeby.etherscan.io/address/0x0CbdF5B0c4E117619631bA4b97dC0d439ADAbD88,
 The the other balances are:
 
 balance of 0x93d499b82c30C27E7265FfDdBbCb0421767bdd64 is 0
-
 balance of 0x586efC5E9463C077D492a449f00a8eDa4675Da36 is 0
 
-### Bitcoin
-mrp1xXbaWbRYDN81ds47tWJrzWwX7k5XpN has 0.86542092 BTC
-https://live.blockcypher.com/btc-testnet/address/mrp1xXbaWbRYDN81ds47tWJrzWwX7k5XpN/
+Geth was run with the following settings
 
-mopQvr2abuWAynp1hnMxcNddk8n2v5wkVY has 1.3 BTC
+```
+geth --rinkeby --fast --rpc --rpcapi "eth"
+```
+
+### Bitcoin Testnet3
+For testing, 1.3 BTC was sent to the first address, 0.865 BTC was send to the second address:
+https://live.blockcypher.com/btc-testnet/address/mrp1xXbaWbRYDN81ds47tWJrzWwX7k5XpN/
 https://live.blockcypher.com/btc-testnet/address/mopQvr2abuWAynp1hnMxcNddk8n2v5wkVY/
 
+Consolidate Bitcoin to mjdqkWc34TYbFxqHaJ1mGsjuRbPC57Bqsq, current balance 0 BTC
+
+```
+./consolidate1000-btc -s ../key800/secret-test.csv -b mjdqkWc34TYbFxqHaJ1mGsjuRbPC57Bqsq -N test -U test -p me -i
+```
+
+After consolidation, both addresses are empty and mjdqkWc34TYbFxqHaJ1mGsjuRbPC57Bqsq has 2.16541752 BTC:
+https://live.blockcypher.com/btc-testnet/address/mjdqkWc34TYbFxqHaJ1mGsjuRbPC57Bqsq/
+
+Bitcoin Core was run with the following settings
+
+```
+bitcoind -testnet -rpcuser=user -rpcpassword=pass
+```
+
+## Testing with 5 and gaps (3+2)

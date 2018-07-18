@@ -5,18 +5,18 @@ import (
 	"github.com/ogier/pflag"
 	"os"
 	"encoding/base64"
-	"io/ioutil"
 	"log"
+	"math/big"
+	"fmt"
+	"github.com/ethereum/go-ethereum/core/types"
+	"io/ioutil"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"encoding/csv"
 	"time"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"math/big"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
-	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"context"
 )
 
@@ -40,7 +40,7 @@ func main() {
 	flag.Usage = func() {
 		println("Usage:")
 		println("  consolidate1000-eth [-s --private-keys filename] [-d --dryrun boolean] " +
-			"[-e --ethereum address] [-u --ethereum-url url:port] [-g --gascost gwei] [-n --ethereum-net main|rinkeby|test]")
+			"[-e --ethereum-to address] [-u --url scheme://url:port] [-g --gascost gwei] [-N --network main|rinkeby|test]")
 		println()
 		flag.PrintDefaults()
 		println()
@@ -49,10 +49,10 @@ func main() {
 	flag.StringVarP(&privateKeyCSV, "private-keys", "s", "", "CSV filename to store the private keys")
 	flag.BoolVarP(&dryRun, "dryrun", "d", false, "Don't issue the tx, print the tx to stdout")
 
-	flag.StringVarP(&ethereumAddress, "ethereum", "e", "", "The ethereum address where to consolidate the transactions")
-	flag.StringVarP(&ethereumClientURL, "ethereum-url", "u", "http://127.0.0.1:8545", "The ethereum URL where a full node is running")
+	flag.StringVarP(&ethereumAddress, "ethereum-to", "e", "", "The ethereum address where to consolidate the transactions")
+	flag.StringVarP(&ethereumClientURL, "url", "u", "http://127.0.0.1:8545", "The ethereum URL where a full node is running")
 	flag.IntVarP(&gasCost, "gascost", "g", 1, "Gas cost in gwei, check https://ethgasstation.info/ for current price")
-	flag.StringVarP(&ethereumNet, "ethereum-net", "n", "main", "Specify ethereum network: main,test,rinkeby")
+	flag.StringVarP(&ethereumNet, "network", "N", "main", "Specify ethereum network: main,test,rinkeby")
 	flag.Parse(os.Args[1:])
 
 	if len(ethereumAddress) == 0 || len(privateKeyCSV) == 0 {
@@ -60,15 +60,11 @@ func main() {
 		os.Exit(2)
 	}
 
-	consolidateEth(privateKeyCSV, ethereumAddress, ethereumClientURL, gasCost, ethereumNet, dryRun)
-}
-
-func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClientURL string, gasCost int, ethereumNet string, dryRun bool) {
 	password := randStr(20)
 	dirName, err:=ioutil.TempDir(os.TempDir(), "consolidate-eth")
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("TempDir failed: %v\n", err)
 	}
 
 	//we can use keystore only
@@ -78,26 +74,28 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 		keystore.LightScryptN,
 		keystore.LightScryptP)
 
+	defer os.RemoveAll(dirName)
+
 	f, err := os.Open(privateKeyCSV)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Open file failed: %v\n", err)
 	}
 	defer f.Close()
 	lines, err := csv.NewReader(f).ReadAll()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Read file failed: %v\n", err)
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 3 * time.Second)
 	eth, err := ethclient.DialContext(ctx, ethereumClientURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Connection failed: %v\n", err)
 	}
 
 	total := big.NewInt(0	)
 	sendToAddress := common.HexToAddress(ethereumAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("HexToAddress failed: %v\n", err)
 	}
 
 	gasCostWei := big.NewInt(int64(gasCost))
@@ -123,26 +121,26 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 		}
 		privateKey, err := crypto.HexToECDSA(line[0][2:])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("HexToECDSA failed: %v\n", err)
 		}
 		acc, err := ks.ImportECDSA(privateKey, password)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("ImportECDSA failed: %v\n", err)
 		}
 		//fetch account balance
 		balance, err:=eth.BalanceAt(ctx, acc.Address, nil)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("BalanceAt failed: %v\n", err)
 		}
 
 		if balance.Cmp(big.NewInt(0)) == 0 {
 			fmt.Printf(".")
 			continue
 		}
-		fmt.Printf("balance of %v is %v\n", line[2], balance)
+		fmt.Printf("Balance of %v is %v\n", line[2], balance)
 		nonce, err:=eth.NonceAt(ctx, acc.Address, nil)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("NonceAt failed: %v\n", err)
 		}
 
 		//outdated, but gives a hint on the API:
@@ -151,27 +149,29 @@ func consolidateEth(privateKeyCSV string, ethereumAddress string, ethereumClient
 		rawTx := types.NewTransaction(nonce, sendToAddress, newBalance, GAS_LIMIT, gasCostWei, nil)
 		err = ks.Unlock(acc, password)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Unlock failed: %v\n", err)
 		}
 
 		signedTx, err := ks.SignTx(acc, rawTx, param.ChainID)
 
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("SignTx failed: %v\n", err)
 		}
 
 		if dryRun {
-			fmt.Printf("create tx: %v\n",signedTx);
+			fmt.Printf("Create tx: %v\n",signedTx);
 		} else {
 			err = eth.SendTransaction(ctx, signedTx)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("SendTransaction failed: %v\n", err)
 			}
 		}
 		total.Add(total,newBalance)
-		fmt.Printf("New total: %v\n", total)
+		fmt.Printf("New total balance: %v\n", total)
+		//remove key again
+		ks.Delete(acc, password)
 	}
-	fmt.Printf("\n")
+	fmt.Printf("Ethereum consolidating done\n")
 }
 
 //generate some random strings

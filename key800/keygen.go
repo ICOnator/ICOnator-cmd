@@ -39,7 +39,7 @@ func main() {
 
 	flag.Usage = func() {
 		println("Usage:")
-		println("  key800 [-n num] [-s filename] [-p filename] [-b main|reg|test][-r1 random1] [-r2 random2] [-r3 random3] [-r4 random4]")
+		println("  key800 [-n num] [-s filename] [-p filename] [-N --bitcoin-net main|reg|test] [-r1 random1] [-r2 random2] [-r3 random3] [-r4 random4]")
 		println()
 		flag.PrintDefaults()
 		println()
@@ -52,7 +52,7 @@ func main() {
 	flag.IntVarP(&random4, "random4", "4", 0, "Optional random number to increase entropy")
 	flag.StringVarP(&privateKeyCSV, "private-keys", "s", "", "CSV filename to store the private keys")
 	flag.StringVarP(&publicKeyCSV, "public-keys", "p", "", "CSV filename to store the public keys only")
-	flag.StringVarP(&btcNet, "btcnet", "b", "main", "Specify bitcoin network: main,test,reg")
+	flag.StringVarP(&btcNet, "bitcoin-net", "N", "main", "Specify bitcoin network: main,test,reg")
 	flag.Parse(os.Args[1:])
 
 	line := fmt.Sprintf("Private Key,Private Key (WIF),Ethereum Address,Bitcoin Address (P2PKH-Base58)\n")
@@ -131,7 +131,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		line := fmt.Sprintf("%v,%v,%v,%v\n", hexutil.Encode(crypto.FromECDSA(key)), wif, ethAddr.Hex(), btcAddr)
+		line := fmt.Sprintf("%v,%v,%v,%v\n", hexutil.Encode(crypto.FromECDSA(key)), wif.String(), ethAddr.Hex(), btcAddr)
 		if len(privateKeyCSV) > 0 {
 			fpriv.WriteString(line)
 		} else {
