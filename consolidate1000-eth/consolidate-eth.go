@@ -137,7 +137,7 @@ func main() {
 			fmt.Printf(".")
 			continue
 		}
-		fmt.Printf("Balance of %v is %v\n", line[2], balance)
+		fmt.Printf("Balance of %v is %9.7f ETH\n", line[2], toETH(balance))
 		nonce, err:=eth.NonceAt(ctx, acc.Address, nil)
 		if err != nil {
 			log.Fatalf("NonceAt failed: %v\n", err)
@@ -167,11 +167,21 @@ func main() {
 			}
 		}
 		total.Add(total,newBalance)
-		fmt.Printf("New total balance: %v\n", total)
+		fmt.Printf("New total balance: %9.7f ETH\n", toETH(total))
 		//remove key again
 		ks.Delete(acc, password)
 	}
 	fmt.Printf("Ethereum consolidating done\n")
+}
+
+func toETH(wei *big.Int) (float64) {
+	f:=new(big.Float).SetInt(wei)
+	base:=big.NewInt(10)
+	exp:=big.NewInt(18)
+	base.Exp(base, exp, nil)
+	f.Quo(f, new(big.Float).SetInt(base))
+	ret, _ := f.Float64()
+	return ret;
 }
 
 //generate some random strings

@@ -103,3 +103,72 @@ bitcoind -testnet -rpcuser=user -rpcpassword=pass
 ```
 
 ## Testing with 5 and gaps (3+2)
+Tests conducted with: ```./key800 -n 5 -s secret-test.csv -p public-test.csv -N test -1 43543 -2 24566 -3 645737 -4 67843```
+
+Payin to
+
+```
+Ethereum Address,Bitcoin Address (P2PKH-Base58)
+0x3BFA6A123b5f57aCE4822eB81a40492d07770AD6,miYzFVaPRJxuF4cJCrBjH1du72BwWqxLVy
+0x16b65f95a74172ba17D74cc32595A873f32cfa56,mpzKwaqF12SwZA5HTAwcQLQUnj7GCiQ5ke
+0xc938dC49A05FDf46c2078a8E13Fe66e28CE1CcDd,n1LcEGxDDuUu48gj1jhV8pP5UyuWBm5vkN
+0xD79F0B989FF359e1E642e46500DEa42880722a64,moG9Pfdrm1VqifdEgJ39x9ghE2kG5YdZfh
+0x797f6560A77df0992A4Eec1C3f6A72eE956f370e,mzxuricfQ4jgdjAe8xXcjChjrzXRnjFR6m
+
+```
+
+### Ethereum Rinkeby
+The adresses were filled as follows. 
+```
+https://rinkeby.etherscan.io/address/0x3BFA6A123b5f57aCE4822eB81a40492d07770AD6 0.0
+https://rinkeby.etherscan.io/address/0x16b65f95a74172ba17D74cc32595A873f32cfa56 0.1
+https://rinkeby.etherscan.io/address/0xc938dC49A05FDf46c2078a8E13Fe66e28CE1CcDd 0.2 
+https://rinkeby.etherscan.io/address/0xD79F0B989FF359e1E642e46500DEa42880722a64 0.3
+https://rinkeby.etherscan.io/address/0x797f6560A77df0992A4Eec1C3f6A72eE956f370e 0.0
+```
+
+Consolidation to: 0x3dcBbCC53C8a9B2f965d89B92b3d0041da24eAE6
+
+```
+./consolidate1000-eth -s ../key800/secret-test.csv -N rinkeby -e 0x3dcBbCC53C8a9B2f965d89B92b3d0041da24eAE6
+```
+
+Output:
+
+```
+https://rinkeby.etherscan.io/address/0x3dcBbCC53C8a9B2f965d89B92b3d0041da24eAE6 0.599937
+
+https://rinkeby.etherscan.io/address/0x3BFA6A123b5f57aCE4822eB81a40492d07770AD6 0.0
+https://rinkeby.etherscan.io/address/0x16b65f95a74172ba17D74cc32595A873f32cfa56 0.0
+https://rinkeby.etherscan.io/address/0xc938dC49A05FDf46c2078a8E13Fe66e28CE1CcDd 0.0 
+https://rinkeby.etherscan.io/address/0xD79F0B989FF359e1E642e46500DEa42880722a64 0.0
+https://rinkeby.etherscan.io/address/0x797f6560A77df0992A4Eec1C3f6A72eE956f370e 0.0
+```
+
+### Bitcoin Testnet3
+The adresses were filled as follows. 
+```
+https://live.blockcypher.com/btc-testnet/address/miYzFVaPRJxuF4cJCrBjH1du72BwWqxLVy 0.98567784
+https://live.blockcypher.com/btc-testnet/address/mpzKwaqF12SwZA5HTAwcQLQUnj7GCiQ5ke 0.0
+https://live.blockcypher.com/btc-testnet/address/n1LcEGxDDuUu48gj1jhV8pP5UyuWBm5vkN 1.04248201
+https://live.blockcypher.com/btc-testnet/address/moG9Pfdrm1VqifdEgJ39x9ghE2kG5YdZfh 5.37656688
+https://live.blockcypher.com/btc-testnet/address/mzxuricfQ4jgdjAe8xXcjChjrzXRnjFR6m 0.0
+```
+
+Consolidation to: ms2Dt98uj11zvQ1hdPt3T5bD3QLRZXWGF, executed: 
+
+```
+./consolidate1000-btc -s ../key800/secret-test.csv -N test -U test -p me -b ms2Dt98uj11zvQ1hdPt3T5bD3QLRZXWGFC
+```
+
+Output: 
+
+```
+https://live.blockcypher.com/btc-testnet/address/ms2Dt98uj11zvQ1hdPt3T5bD3QLRZXWGFC 3.32815494
+
+https://live.blockcypher.com/btc-testnet/address/miYzFVaPRJxuF4cJCrBjH1du72BwWqxLVy 0.0
+https://live.blockcypher.com/btc-testnet/address/mpzKwaqF12SwZA5HTAwcQLQUnj7GCiQ5ke 0.0
+https://live.blockcypher.com/btc-testnet/address/n1LcEGxDDuUu48gj1jhV8pP5UyuWBm5vkN 0.0
+https://live.blockcypher.com/btc-testnet/address/moG9Pfdrm1VqifdEgJ39x9ghE2kG5YdZfh 0.0
+https://live.blockcypher.com/btc-testnet/address/mzxuricfQ4jgdjAe8xXcjChjrzXRnjFR6m 0.0
+```

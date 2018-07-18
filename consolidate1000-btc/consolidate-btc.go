@@ -196,7 +196,6 @@ func (c *Client) estimateSmartFee(conf_target uint16)(float64, error) {
 		return 0, err
 	}
 	result:=resp["result"]
-	fmt.Printf("test [%v]", result)
 	return result.(map[string]interface{})["feerate"].(float64), err
 }
 
