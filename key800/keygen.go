@@ -35,7 +35,7 @@ func main() {
 		btcNet        string
 	)
 
-	flag := pflag.NewFlagSet("keygen", pflag.ExitOnError)
+	flag := pflag.NewFlagSet("key800", pflag.ExitOnError)
 
 	flag.Usage = func() {
 		println("Usage:")
