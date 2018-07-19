@@ -65,7 +65,7 @@ Alice and Bob are required to go there.
 1. The stick with the public key can now be used for the payin in 
 ICOnator.
 
-##Consolidation
+## Consolidation
 1. Make sure your laptop has the Bitcoin core full client and Ethereum full client
 installed. Since this laptop is connected to the Internet, make sure its not compromised.
 As no private keys are stored withing the Ethereum full client, the Ethereum full
@@ -110,7 +110,7 @@ wallet and the private keys back to the vault as well. There may be Airdrops or 
 on these accounts. To access the funds, Bob and Alice need to go the bank vault,
 get the trezor and bring it back again. 
 
-##Miting
+## Miting
 
 tbd.
 
