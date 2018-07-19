@@ -91,24 +91,42 @@ the vault.
 
 1. The private keys are copied to the laptop with the consolidation binaries by 
 Bob. The scripts are run sequentially by Alice. Alice and Bob (and Carol) will 
-supervise the process. 
+supervise the process. The private keys, hardware wallet, and laptop are always in
+a room with at least two people.
 
 1. The consolidation address is generated from the hardware wallet. Setup first the
-hardware wallet. 
+hardware wallet (see Hardware Wallet Setup). 
 
-1. Read out seed and write to paper (mnemonic 24 word seed). Define a PIN or 
-roll dice and write down to paper. Copy addresses from Trezor and save somewhere 
-(later needed for contract owner, consolidation addresses). Validate address's 
-checksum by validating it with e.g., MyetherWallet.
+1. Alice copies addresses from Trezor and save somewhere 
+ (needed for contract owner, consolidation addresses). Bob (and Carol) validate address's 
+checksum by validating it with e.g., MyetherWallet. Unplug the hardware wallet.
 
-1. Run the consolidation scripts with the consolidation address from the hardware
-wallet. This will take some time. After consolidation check if all funds have
-been transferred, watch out for error messages.  
+1. Bob runs the consolidation scripts with the consolidation address from the hardware
+wallet. This will take some time. After consolidation Alice, Bob (and Carol) check
+if all funds have been transferred, watch out for error messages.  
 
-1. Laminate seed on paper and PIN and bring to bank vault, bring the hardware
+1. Alice laminate seed on paper and PIN and bring to bank vault, bring the hardware
 wallet and the private keys back to the vault as well. There may be Airdrops or coins due to forks
 on these accounts. To access the funds, Bob and Alice need to go the bank vault,
 get the trezor and bring it back again. 
+
+## Hardware Wallet Setup
+1. Bob: Reset Trezor (Supervised by Alice & Carol) 
+
+1. Bob: Initialize Trezor (Supervised by Alice & Carol) 
+
+1. Bob: Set PIN (Supervised by Alice, no one else present) 
+
+1. Alice: Unlock Trezor with PIN 
+
+1. Carol: Write down Seed (mnemonic 24 word seed)
+
+1. Carol & Bob: Cross check seed  
+
+1. Carol: Laminate sheet 
+
+1. Bob: Send Public Addresses from Trezor to Alice (supervised by Carol & Alice) needed
+for contract owner and consolidation 
 
 ## Miting
 
