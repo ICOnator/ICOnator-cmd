@@ -1,11 +1,10 @@
 # Key Generation
 
 An important process for an ICO with ICOnator is to generate the Bitcoin and 
-Ethereum public and private keys for investors to payin. Its important to mention
-that it is very important to keep the private keys secure, as they will be
-potentially worth millions. For the previous ICOs we came up with the following
-best practice process. This process requires at least 2 people (Alice, Bob, Carol). 
-Carol can be one or more person. 
+Ethereum public and private keys for investors to payin. It's extremely important 
+to keep the private keys secure, as they will potentially worth millions. 
+For the previous ICOs we came up with the following best practice process. This process 
+requires at least 3 people (Alice, Bob, Carol). Carol can be one or more persons.
 
 ## Preparations
 * For the key generation, Alice needs to have git and go installed on their 
@@ -128,9 +127,9 @@ get the trezor and bring it back again.
 1. Bob: Send Public Addresses from Trezor to Alice (supervised by Carol & Alice) needed
 for contract owner and consolidation 
 
-## Miting
+## Minting
 
-tbd.
+To be described.
 
 * Always 3 people present
 * Deploy contract and mint tokens from online laptop
