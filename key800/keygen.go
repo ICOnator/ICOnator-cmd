@@ -1,25 +1,26 @@
 package main
 
 import (
-	"github.com/ethereum/go-ethereum/crypto"
-	"fmt"
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"crypto/rand"
+	"fmt"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcd/btcec"
-	rand2 "math/rand"
-	"github.com/ogier/pflag"
-	"os"
-	"time"
-	"encoding/binary"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+
 	"bytes"
-	"io/ioutil"
-	"log"
-	"io"
+	"encoding/binary"
 	"errors"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ogier/pflag"
+	"io"
+	"io/ioutil"
+	"log"
+	rand2 "math/rand"
+	"os"
+	"time"
 )
 
 func main() {
@@ -72,7 +73,7 @@ func main() {
 	rand2 := rand2.New(rand2.NewSource(time.Now().Unix() ^ seed)) //user provided entropy
 	rand3 := newDualReader(rand1, rand2)
 
-	var fpriv *os.File;
+	var fpriv *os.File
 	if len(privateKeyCSV) > 0 {
 		var err error
 		fpriv, err = os.OpenFile(privateKeyCSV, os.O_APPEND|os.O_WRONLY, 0644)
@@ -82,7 +83,7 @@ func main() {
 		}
 	}
 
-	var fpub *os.File;
+	var fpub *os.File
 	if len(publicKeyCSV) > 0 {
 		var err error
 		fpub, err = os.OpenFile(publicKeyCSV, os.O_APPEND|os.O_WRONLY, 0644)
@@ -109,12 +110,7 @@ func main() {
 		}
 
 		ethAddr := crypto.PubkeyToAddress(key.PublicKey)
-		btcPriv, btcPub := btcec.PrivKeyFromBytes(key.PublicKey.Curve, crypto.FromECDSA(key))
-
-		//sanity check
-		if btcPub.X.Cmp(key.X) != 0 || btcPub.Y.Cmp(key.Y) != 0 || *btcPub.Curve.Params() != *key.Curve.Params() {
-			log.Fatal(errors.New("not the same public key"))
-		}
+		btcPriv, _ := btcec.PrivKeyFromBytes(crypto.FromECDSA(key))
 
 		wif, err := btcutil.NewWIF(btcPriv, param, true)
 		if err != nil {
@@ -126,7 +122,7 @@ func main() {
 		//	log.Fatal(err)
 		//}
 
-		btcAddr, err := btcutil.NewAddressPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), param);
+		btcAddr, err := btcutil.NewAddressPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), param)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -170,12 +166,12 @@ func (mr *dualReader) Read(p []byte) (n int, err error) {
 
 	n1, err1 := mr.reader1.Read(tmp1)
 	if err1 != nil {
-		return n1, err1;
+		return n1, err1
 	}
 
 	n2, err2 := mr.reader2.Read(tmp2)
 	if err2 != nil {
-		return n2, err2;
+		return n2, err2
 	}
 
 	if len != n1 && len != n2 {
@@ -183,7 +179,7 @@ func (mr *dualReader) Read(p []byte) (n int, err error) {
 	}
 
 	for i := 0; i < len; i++ {
-		p[i] = tmp1[i] ^ tmp2[i];
+		p[i] = tmp1[i] ^ tmp2[i]
 	}
 
 	return len, nil
