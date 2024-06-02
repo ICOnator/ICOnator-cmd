@@ -16,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ogier/pflag"
 	"io"
-	"io/ioutil"
 	"log"
 	rand2 "math/rand"
 	"os"
@@ -56,16 +55,16 @@ func main() {
 	flag.StringVarP(&btcNet, "bitcoin-net", "N", "main", "Specify bitcoin network: main,test,reg")
 	flag.Parse(os.Args[1:])
 
-	line := fmt.Sprintf("Private Key,Private Key (WIF),Ethereum Address,Bitcoin Address (P2PKH-Base58)\n")
+	line := fmt.Sprintf("Private Key, Private Key (WIF), Ethereum Address, Bitcoin Address (SegWit-Bech32), Bitcoin Address (P2PKH-Base58)\n")
 	if len(privateKeyCSV) > 0 {
-		ioutil.WriteFile(privateKeyCSV, []byte(line), 0644)
+		os.WriteFile(privateKeyCSV, []byte(line), 0644)
 	} else {
 		print(line)
 	}
 
 	if len(publicKeyCSV) > 0 {
 		linePublic := fmt.Sprintf("Ethereum Address,Bitcoin Address (P2PKH-Base58)\n")
-		ioutil.WriteFile(publicKeyCSV, []byte(linePublic), 0644)
+		os.WriteFile(publicKeyCSV, []byte(linePublic), 0644)
 	}
 
 	seed := createSeed(random1, random2, random3, random4)
@@ -117,26 +116,35 @@ func main() {
 			log.Fatal(err)
 		}
 
-		//btcWitAddr, err := btcutil.NewAddressWitnessPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), param);
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
+		// Compute the public key hash
+		pubKeyHash := btcutil.Hash160(wif.SerializePubKey())
 
-		btcAddr, err := btcutil.NewAddressPubKeyHash(btcutil.Hash160(wif.SerializePubKey()), param)
+		segwitAddr, err := btcutil.NewAddressWitnessPubKeyHash(pubKeyHash, param)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		line := fmt.Sprintf("%v,%v,%v,%v\n", hexutil.Encode(crypto.FromECDSA(key)), wif.String(), ethAddr.Hex(), btcAddr)
+		btcAddr, err := btcutil.NewAddressPubKeyHash(pubKeyHash, param)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		line := fmt.Sprintf("%v,%v,%v,%v,%v\n", hexutil.Encode(crypto.FromECDSA(key)), wif.String(), ethAddr.Hex(), segwitAddr, btcAddr)
 		if len(privateKeyCSV) > 0 {
-			fpriv.WriteString(line)
+			_, err := fpriv.WriteString(line)
+			if err != nil {
+				log.Fatal(err)
+			}
 		} else {
 			print(line)
 		}
 
 		if len(publicKeyCSV) > 0 {
 			linePublic := fmt.Sprintf("%v,%v\n", ethAddr.Hex(), btcAddr)
-			fpub.WriteString(linePublic)
+			_, err := fpub.WriteString(linePublic)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
