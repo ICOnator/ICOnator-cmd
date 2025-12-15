@@ -55,7 +55,7 @@ func main() {
 	flag.StringVarP(&btcNet, "bitcoin-net", "N", "main", "Specify bitcoin network: main,test,reg")
 	flag.Parse(os.Args[1:])
 
-	line := fmt.Sprintf("Private Key, Private Key (WIF), Ethereum Address, Bitcoin Address (SegWit-Bech32), Bitcoin Address (P2PKH-Base58)\n")
+	line := "Private Key, Private Key (WIF), Ethereum Address, Bitcoin Address (SegWit-Bech32), Bitcoin Address (P2PKH-Base58)\n"
 	if len(privateKeyCSV) > 0 {
 		os.WriteFile(privateKeyCSV, []byte(line), 0644)
 	} else {
@@ -63,7 +63,7 @@ func main() {
 	}
 
 	if len(publicKeyCSV) > 0 {
-		linePublic := fmt.Sprintf("Ethereum Address,Bitcoin Address (P2PKH-Base58)\n")
+		linePublic := "Ethereum Address,Bitcoin Address (P2PKH-Base58)\n"
 		os.WriteFile(publicKeyCSV, []byte(linePublic), 0644)
 	}
 
@@ -76,20 +76,20 @@ func main() {
 	if len(privateKeyCSV) > 0 {
 		var err error
 		fpriv, err = os.OpenFile(privateKeyCSV, os.O_APPEND|os.O_WRONLY, 0644)
-		defer fpriv.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer fpriv.Close()
 	}
 
 	var fpub *os.File
 	if len(publicKeyCSV) > 0 {
 		var err error
 		fpub, err = os.OpenFile(publicKeyCSV, os.O_APPEND|os.O_WRONLY, 0644)
-		defer fpub.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer fpub.Close()
 	}
 
 	var param *chaincfg.Params
